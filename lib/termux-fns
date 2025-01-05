@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+HELPDIR="$HOME/bin/help/"
+BINDIR="$HOME/bin/"
+LIBDIR="$HOME/bin/lib/"
+TRASHCAN="$HOME/.trash/"
+
+chkdir () {
+  if [[ ! -d "$1" ]]; then
+    mkdir -p "$1"
+  fi
+}
+
+chkdir "$HELPDIR"
+chkdir "$BINDIR"
+chkdir "$LIBDIR"
+chkdir "$TRASHCAN"
+
+viewhelp () {
+  echo ""
+  while read line; do
+    if [[ "$line" =~ ^- ]]; then
+      echo "$line" |\
+        awk -F '::' '{printf "%s\n%s\n\n", $1, $2}' |\
+        fold -w45 -s |\
+        sed "s/^[a-zA-Z]/`printf "%-7s"`&/; s/^-/`printf "%-3s"`&/"
+    elif [[ "$line" =~ ^[a-zA-Z] ]] && ! [[ "$line" =~ : ]]; then
+      echo "$line" |\
+        fold -w45 -s |\
+        sed "s/^[a-zA-Z]/`printf "%-3s"`&/"
+    else
+      echo "$line"
+    fi
+  done < $HELPDIR/${1##*/}
+}

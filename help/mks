@@ -1,0 +1,9 @@
+Description:
+Creates shell scripts with help pages.
+
+Usage: mks [OPTIONS]
+
+Options:
+-h, --help::Print this help page.
+-b, --bash::Create a bash script.
+-e, --edit::Edit an existing script.

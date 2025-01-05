@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+source $HOME/bin/lib/termux-fns
+
+absolute_path () {
+  echo "`cd \`dirname "$1"\`; pwd`/`basename "$1"`"
+}
+
+case "$1" in
+  -h|--help)
+    viewhelp ${0##*/}
+    ;;
+  -r|--restore)
+    choice="`find "$TRASHCAN" -maxdepth 2 |\
+      sed "/.trash$/d; /[0-9]\{2\}-[0-9]\{2\}-[0-9]\{4\}$/d; /logfile$/d; s|$TRASHCAN/||g" |\
+      fzf`"
+
+    if [[ -z "$choice" ]]; then
+      exit
+    fi
+
+    time="`echo "$choice" |\
+      awk -F '/' '{print $1}'`"
+
+    targetname="`echo "$choice" |\
+      awk -F '/' '{print $2}'`"
+
+    line="`grep --no-ignore-case "$targetname;;;" "$TRASHCAN/$time/logfile"`"
+
+    original_path="`echo "$line" |\
+      awk -F ';;;' '{print $2}'`"
+
+    mv "$TRASHCAN/$choice" "$original_path"
+
+    sed -i "s|$targetname;;;$original_path||g; /^$/d" "$TRASHCAN/$time/logfile"
+
+    echo "Moved '$targetname' back to '$original_path'"
+    ;;
+  *)
+    if [[ "$#" -gt "0" ]]; then
+      for target in "${@}"; do
+        real_path="`absolute_path "$target"`"
+        filename="`basename "$target"`"
+        today="`date "+%d-%m-%Y"`"
+        chkdir "$TRASHCAN/$today"
+        echo "$filename;;;$real_path" >> $TRASHCAN/$today/logfile
+        mv "$real_path" "$TRASHCAN/$today"
+        echo "Moved '$filename' to '$today/$filename'"
+      done
+    else
+      echo "Please, specify a file to trash."
+    fi
+    ;;
+esac
