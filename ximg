@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+imgDir="/storage/emulated/0/Pictures/temp"
+latestImg="$(ls -tr "$imgDir" | tail -n 1)"
+outDir="$HOME/.cache"
+outFile="ximg"
+
+tesseract "$imgDir/$latestImg" "$outDir/$outFile"
+
+cat "$outDir/${outFile}.txt" | termux-clipboard-set

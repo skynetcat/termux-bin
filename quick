@@ -1,0 +1,24 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+jsonResult="$(termux-dialog sheet -v "📕 Note,🃏 Card,🤖 Local LLM")"
+exitCode="$(echo "$jsonResult" | jq '.["code"]')"
+selectionIndex="$(echo "$jsonResult" | jq '.["index"]')"
+
+#echo "$jsonResult"
+#echo "$exitCode"
+#echo "$selectionIndex"
+
+
+if [[ $exitCode -ne -2 ]]; then
+  case "$selectionIndex" in
+    0)
+      am start -n net.cozic.joplin/net.cozic.joplin.MainActivity
+      ;;
+    1)
+      am start -n com.ichi2.anki/com.ichi2.anki.IntentHandler2
+      ;;
+    2)
+      am start -n com.Vali98.ChatterUI/com.Vali98.ChatterUI.MainActivity
+      ;;
+  esac
+fi

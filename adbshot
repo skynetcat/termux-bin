@@ -1,0 +1,45 @@
+#!/bin/bash
+
+mkimg () {
+  dir="$1"
+  prefix="$2"
+  printf -v fileName "%s-%(%d_%m_%y_%H_%M_%S)T" "$prefix"
+  file="$dir/$fileName.png"
+
+  app="org.fossify.gallery/org.fossify.gallery.activities.EditActivity"
+
+  # Take screenshot and edit it with the app
+  adb -s localhost:5555 shell "screencap -p $file ; cmd activity start --user 0 -a android.intent.action.EDIT -d content://media/external/images/media/\$(content query --uri \"content://media/external/images/media\" | grep \"$file\" | sed 's/.* _id\=//g;s/,.*$//g') -t image/png \"$app\"" 
+
+  sleep 1
+
+  # Wait till app exits before proceeding
+  while adb -s localhost:5555 shell "dumpsys activity activities" | grep -q "org.fossify.gallery/org.fossify.gallery.activities.EditActivity"; do
+    sleep 1
+  done
+
+  # Remove the original image as it's unneeded
+  rm -rf "$file"
+  
+  # Remove exif data
+  exiftool -overwrite_original -all= "$dir"
+  
+  # Refresh media storage to access img from other apps
+  adb -s localhost:5555 shell content call --method scan_volume --uri content://media --arg external_primary
+}
+
+case $1 in
+  "-t") 
+    mkimg "/storage/emulated/0/Pictures/temp" "TMP"
+
+    termux-toast -s -g bottom -b "#ea6962" -c "#FF282828" "TMP image ready"
+
+    echo "rm -rf $HOME/storage/shared/Pictures/temp/$fileName*.png" | at now + 3 hours
+    ;;
+
+  "-p") 
+    mkimg "/storage/emulated/0/Pictures/Screenshots" "Screenshot"
+
+    termux-toast -s -g bottom -b "#ea6962" -c "#FF282828" "Permanent image ready"
+    ;;
+esac
