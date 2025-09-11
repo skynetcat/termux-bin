@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+source $HOME/bin/lib/termux-fns
+
+mkhelp () {
+  cat <<EOF > $HELPDIR/$1
+Description:
+
+Usage: $1 [OPTIONS]
+
+Options:
+-h, --help::Print this help page.
+EOF
+}
+
+mkbash () {
+  cat <<EOF > "$BINDIR/$1"
+#!/usr/bin/env bash
+source \$HOME/bin/lib/termux-fns
+
+case "\$1" in
+  -h|--help)
+    viewhelp \${0##*/}
+    ;;
+  *)
+    if [[ -z "\$1" ]]; then
+      echo "Option is empty. Please specify an option."
+    else
+      echo "'\$1' Invalid option"
+    fi
+    viewhelp \${0##*/}
+    ;;
+esac
+EOF
+ mkhelp $1
+}
+
+main () {
+  if [ ! -f "$BINDIR/$2" ]; then
+    "$1" "$2"
+    chmod +x "$BINDIR/$2"
+  else
+    cat <<EOF
+
+"$2" Already exists.
+Opening the file with $EDITOR...
+EOF
+  fi
+  nvim "$BINDIR/$2" "$HELPDIR/$2"
+}
+
+case "$1" in
+  -h|--help)
+    viewhelp ${0##*/}
+    ;;
+  -b|--bash) 
+    filename="$2"
+
+    while [[ -z "$filename" ]]; do
+      read -p "Enter filename: " filename
+    done
+    
+    main mkbash "$filename"
+    ;;
+  -e|--edit) 
+    filename="$2"
+
+    if [[ -z "$filename" ]] || [[ ! -f "$BINDIR/$filename" ]]; then
+      filename="`find "$BINDIR" -maxdepth 1 -type f |\
+        awk -F '/' '{print $NF}' |\
+        fzf`"
+      if [[ -z "$filename" ]]; then
+        exit
+      fi
+    fi
+      
+    nvim "$BINDIR/$filename" "$HELPDIR/$filename"
+    ;;
+  *)
+    if [[ -z "$1" ]]; then
+      echo "Option is empty. Please specify an option."
+    else
+      echo "'$1' Invalid option"
+    fi
+    viewhelp ${0##*/}
+    ;;
+esac
