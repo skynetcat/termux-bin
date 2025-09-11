@@ -1,8 +1,0 @@
-Description:
-A simple trash script.
-
-Usage: trash [OPTIONS]
-
-Options:
--h, --help::Print this help page.
--r, --restore::Restore to original path.
