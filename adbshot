@@ -7,6 +7,7 @@ mkimg () {
   file="$dir/$fileName.png"
 
   app="org.fossify.gallery/org.fossify.gallery.activities.EditActivity"
+  # app="com.kaii.photos/com.kaii.photos.compose.single_photo.OpenWithView"
 
   # Take screenshot and edit it with the app
   adb -s localhost:5555 shell "screencap -p $file ; cmd activity start --user 0 -a android.intent.action.EDIT -d content://media/external/images/media/\$(content query --uri \"content://media/external/images/media\" | grep \"$file\" | sed 's/.* _id\=//g;s/,.*$//g') -t image/png \"$app\"" 

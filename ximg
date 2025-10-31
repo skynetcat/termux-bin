@@ -1,10 +1,40 @@
 #!/usr/bin/env bash
 
-imgDir="/storage/emulated/0/Pictures/temp"
+
+workDir="$HOME/.cache/ximg"
+[ ! -d "$workDir" ] && mkdir -p "$workDir"
+
+case "$1" in
+  "-c")
+    imgDir="/storage/emulated/0/DCIM/OpenCamera"
+    ;;
+  "-co")
+    imgDir="/storage/emulated/0/DCIM/OpenCamera"
+    open=1
+    ;;
+  "-o")
+    imgDir="/storage/emulated/0/Pictures/temp"
+    open=1
+    ;;
+  "-r")
+    nvim -c "set spell" "$workDir/output.txt"
+    exit
+    ;;
+  *)
+    imgDir="/storage/emulated/0/Pictures/temp"
+    ;;
+esac
+
+rm -rf "$workDir/img.jpg"
+
 latestImg="$(ls -tr "$imgDir" | tail -n 1)"
-outDir="$HOME/.cache"
-outFile="ximg"
 
-tesseract "$imgDir/$latestImg" "$outDir/$outFile"
+magick "$imgDir/$latestImg" -alpha off -auto-threshold otsu -density 300 "$workDir/img.jpg"
 
-cat "$outDir/${outFile}.txt" | termux-clipboard-set
+tesseract "$workDir/img.jpg" "$workDir/output"
+
+if [[ -n "$open" ]]; then
+  nvim -c "set spell" "$workDir/output.txt"
+else
+  cat "$workDir/output.txt" | termux-clipboard-set
+fi
