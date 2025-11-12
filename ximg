@@ -7,13 +7,16 @@ workDir="$HOME/.cache/ximg"
 case "$1" in
   "-c")
     imgDir="/storage/emulated/0/DCIM/OpenCamera"
+    mode="cam"
     ;;
   "-co")
     imgDir="/storage/emulated/0/DCIM/OpenCamera"
+    mode="cam"
     open=1
     ;;
   "-o")
     imgDir="/storage/emulated/0/Pictures/temp"
+    mode="screen"
     open=1
     ;;
   "-r")
@@ -22,6 +25,7 @@ case "$1" in
     ;;
   *)
     imgDir="/storage/emulated/0/Pictures/temp"
+    mode="screen"
     ;;
 esac
 
@@ -29,14 +33,23 @@ rm -rf "$workDir/img.jpg"
 
 latestImg="$(ls -tr "$imgDir" | tail -n 1)"
 
-magick "$imgDir/$latestImg" \
-  -alpha off \
-  -density 250 \
-  -statistic median 3x3 \
-  -normalize \
-  +dither -colors 3 -colors 2 \
-  -colorspace gray \
-  "$workDir/img.jpg"
+if [[ "$mode" == "cam" ]]; then
+  magick "$imgDir/$latestImg" \
+    -alpha off \
+    -density 250 \
+    -statistic median 3x3 \
+    -normalize \
+    +dither -colors 3 -colors 2 \
+    -colorspace gray \
+    "$workDir/img.jpg"
+elif [[ "$mode" == "screen" ]]; then
+  magick "$imgDir/$latestImg" \
+    -alpha off \
+    -density 250 \
+    -normalize \
+    -colorspace gray \
+    "$workDir/img.jpg"
+fi
 
 tesseract "$workDir/img.jpg" "$workDir/output"
 
