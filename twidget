@@ -1,0 +1,3 @@
+#!/data/data/com.termux/files/usr/bin/bash
+task rc.verbose=no rc.defaultwidth=45 rc.detection=0 |\
+  sed 's/^/  /g'
