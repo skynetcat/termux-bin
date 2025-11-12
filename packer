@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+[[ ! -d "$HOME/backups" ]] && mkdir -p "$HOME/backups"
+
+pack () {
+  tar czf $HOME/backups/"$1".tar ${@:2}
+}
+
+sync () {
+  rclone sync \
+    --log-level INFO \
+    --progress \
+    "$HOME/backups" \
+    drive:/"backups"
+}
+
+case $1 in
+  "resume"|"r")
+    sync
+    ;;
+
+  *)
+    # Password vaults
+    pack vaults "$HOME/storage/shared/Documents/lock"
+
+    # External program data
+    pack backup "$HOME/storage/shared/Documents/backup"
+    
+    # Anki data
+    pack anki "$HOME/storage/shared/AnkiDroid"
+
+    # Pictures
+    pack pictures "$HOME/storage/shared/Pictures" "$HOME/storage/shared/DCIM" "$HOME/storage/shared/Download/memes/"
+
+    # Termux configs
+    pack termux \
+      "$HOME/.ssh" \
+      "$HOME/.config" \
+      "$HOME/.shortcuts" \
+      "$HOME/.termux" \
+      "$HOME/.bashrc" \
+      "$HOME/code" \
+      "$HOME/scripts" \
+      "$HOME/bin"  \
+      "$HOME/.task" \
+      "$HOME/.taskrc"
+
+    sync
+
+    rm -rf "$HOME/backups"
+    ;;
+esac
+
