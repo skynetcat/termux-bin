@@ -29,7 +29,14 @@ rm -rf "$workDir/img.jpg"
 
 latestImg="$(ls -tr "$imgDir" | tail -n 1)"
 
-magick "$imgDir/$latestImg" -alpha off -auto-threshold otsu -density 300 "$workDir/img.jpg"
+magick "$imgDir/$latestImg" \
+  -alpha off \
+  -density 250 \
+  -statistic median 3x3 \
+  -normalize \
+  +dither -colors 3 -colors 2 \
+  -colorspace gray \
+  "$workDir/img.jpg"
 
 tesseract "$workDir/img.jpg" "$workDir/output"
 
